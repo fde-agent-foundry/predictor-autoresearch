@@ -20,6 +20,12 @@ Scope:
 
 Before running, check local FDE/model availability. Do not silently fall back to XGBoost if the requested FDE model is unavailable.
 
+Inside FDE Foundry, use `predictor-autoresearch-policy` only. It produces bounded
+candidate/window policy with strictly future horizons and always stops for
+data-modeling-engineer selection. Foundry alone maps that policy plus an approved
+`input_asset_id` to `FDEKernelProvider`; this Skill must not import FDE source code or
+invoke benchmark runners in the governed path.
+
 Read `references/fde-integration.md` when FDE discovery, TabPFN weights, or environment checks are relevant.
 Read `references/search-policy.md` when explaining or modifying the search strategy.
 
