@@ -1,0 +1,25 @@
+name: promote-skill
+on:
+  push:
+    tags: ["v*.*.*"]
+permissions:
+  contents: read
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Validate release metadata
+        id: metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          skill=$(sed -n 's/^name: //p' .fde-skill.yaml); subdir=$(sed -n 's/^source_subdir: //p' .fde-skill.yaml)
+          test -n "$skill" && test -f "$subdir/SKILL.md" && test -f "$subdir/agents/openai.yaml"
+          commit=$(git rev-list -n 1 "$GITHUB_REF_NAME"); test "$commit" = "$(git rev-parse HEAD)"
+          echo "skill=$skill" >> "$GITHUB_OUTPUT"; echo "commit=$commit" >> "$GITHUB_OUTPUT"
+      - name: Notify Foundry
+        env: {GH_TOKEN: "${{ secrets.FOUNDRY_DISPATCH_TOKEN }}", SKILL: "${{ steps.metadata.outputs.skill }}", COMMIT: "${{ steps.metadata.outputs.commit }}"}
+        run: test -n "$GH_TOKEN" && gh api --method POST repos/fde-agent-foundry/fde-foundry/dispatches -f event_type=skill-release -F "client_payload[skill]=$SKILL" -F "client_payload[repository]=$GITHUB_REPOSITORY" -F "client_payload[tag]=$GITHUB_REF_NAME" -F "client_payload[source_commit]=$COMMIT"
