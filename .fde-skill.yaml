@@ -1,0 +1,5 @@
+schema_version: fde-skill/v1
+name: predictor-autoresearch
+source_subdir: .
+python_version: "3.11"
+foundry_repository: fde-agent-foundry/fde-foundry
